@@ -206,12 +206,8 @@ public class GoogleDriveAPI {
    *
    * @param fileID ID of the file to delete.
    */
-  public static void delete(String fileID) {
-    try {
-      drive.files().delete(fileID).execute();
-    } catch (IOException e) {
-      System.out.println("An error occurred: " + e);
-    }
+  public static void delete(String fileID) throws IOException {
+    drive.files().delete(fileID).execute();
   }
 
 }
