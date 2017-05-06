@@ -199,4 +199,19 @@ public class GoogleDriveAPI {
     downloader.setProgressListener(new FileDownloadProgressListener());
     downloader.download(new GenericUrl(fileToDownload.getDownloadUrl()), out);
   }
+
+  /** Delete a file on Google Drive. */
+  /**
+   * Permanently delete a file, skipping the trash.
+   *
+   * @param fileID ID of the file to delete.
+   */
+  public static void delete(String fileID) {
+    try {
+      drive.files().delete(fileID).execute();
+    } catch (IOException e) {
+      System.out.println("An error occurred: " + e);
+    }
+  }
+
 }
