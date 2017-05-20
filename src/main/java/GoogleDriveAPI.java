@@ -64,9 +64,9 @@ public class GoogleDriveAPI {
   // private static final String DIR_FOR_DOWNLOADS = "Enter Download Directory";
   // private static final java.io.File UPLOAD_FILE = new java.io.File(UPLOAD_FILE_PATH);
 
-  /** Directory to store user credentials. */
-  private static final java.io.File DATA_STORE_DIR = new java.io.File(
-      System.getProperty("user.home"), ".store/drive_sample");
+  // /** Directory to store user credentials. */
+  // private static final java.io.File DATA_STORE_DIR = new java.io.File(
+  // System.getProperty("user.home"), ".store/drive_sample");
 
   /**
    * Global instance of the {@link DataStoreFactory}. The best practice is to make it a single
@@ -82,6 +82,9 @@ public class GoogleDriveAPI {
 
   /** Global Drive API client. */
   private static Drive drive;
+
+  /** Current Email Credential */
+  private static String currentEmail = null;
 
   /** Authorizes the installed application to access user's protected data. */
   private static Credential authorize() throws Exception {
@@ -108,20 +111,26 @@ public class GoogleDriveAPI {
     return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
   }
 
-  public static void setup() {
-    try {
-      httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-      dataStoreFactory = new FileDataStoreFactory(DATA_STORE_DIR);
-      // authorization
-      Credential credential = authorize();
-      // set up the global Drive instance
-      drive =
-          new Drive.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName(
-              APPLICATION_NAME).build();
-    } catch (IOException e) {
-      System.err.println(e.getMessage());
-    } catch (Throwable t) {
-      t.printStackTrace();
+  private static void setup(String email) {
+    if (currentEmail != email) {
+      currentEmail = email;
+      try {
+        /** Directory to store user credentials. */
+        java.io.File DATA_STORE_DIR =
+            new java.io.File(System.getProperty("user.home"), ".store/" + email);
+        httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+        dataStoreFactory = new FileDataStoreFactory(DATA_STORE_DIR);
+        // authorization
+        Credential credential = authorize();
+        // set up the global Drive instance
+        drive =
+            new Drive.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName(
+                APPLICATION_NAME).build();
+      } catch (IOException e) {
+        System.err.println(e.getMessage());
+      } catch (Throwable t) {
+        t.printStackTrace();
+      }
     }
   }
 
@@ -170,7 +179,8 @@ public class GoogleDriveAPI {
   }
 
   /** Uploads a file using either resumable or direct media upload. */
-  public static String upload(String filepath) throws IOException {
+  public static String upload(String email, String filepath) throws IOException {
+    setup(email);
     FileContent mediaContent =
         new FileContent("application/octet-stream", new java.io.File(filepath));
     Drive.Files.Insert insert = drive.files().insert(new File().setTitle(filepath), mediaContent);
@@ -181,7 +191,8 @@ public class GoogleDriveAPI {
   }
 
   /** Downloads a file using either resumable or direct media download. */
-  public static void download(String fileID, String downFolder) throws IOException {
+  public static void download(String email, String fileID, String downFolder) throws IOException {
+    setup(email);
     // create parent directory (if necessary)
     java.io.File parentDir = new java.io.File(downFolder);
     if (!parentDir.exists() && !parentDir.mkdirs()) {
@@ -206,7 +217,8 @@ public class GoogleDriveAPI {
    *
    * @param fileID ID of the file to delete.
    */
-  public static void delete(String fileID) throws IOException {
+  public static void delete(String email, String fileID) throws IOException {
+    setup(email);
     drive.files().delete(fileID).execute();
   }
 
