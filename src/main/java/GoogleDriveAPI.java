@@ -31,6 +31,7 @@ import com.google.api.client.util.store.DataStoreFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
+import com.google.api.services.drive.model.About;
 import com.google.api.services.drive.model.File;
 
 import java.io.FileOutputStream;
@@ -220,6 +221,21 @@ public class GoogleDriveAPI {
   public static void delete(String email, String fileID) throws IOException {
     setup(email);
     drive.files().delete(fileID).execute();
+  }
+
+  /**
+   * Return available space of specific Google Drive.
+   * 
+   * @throws IOException
+   **/
+  public static long getSpace(String email) throws IOException {
+    setup(email);
+    About about = drive.about().get().execute();
+    // System.out.println("Current user name: " + about.getName());
+    // System.out.println("Root folder ID: " + about.getRootFolderId());
+    // System.out.println("Total quota (bytes): " + about.getQuotaBytesTotal());
+    // System.out.println("Used quota (bytes): " + about.getQuotaBytesUsed());
+    return about.getQuotaBytesTotal() - about.getQuotaBytesUsed();
   }
 
 }
