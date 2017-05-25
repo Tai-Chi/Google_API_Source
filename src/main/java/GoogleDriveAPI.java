@@ -192,17 +192,22 @@ public class GoogleDriveAPI {
   }
 
   /** Downloads a file using either resumable or direct media download. */
-  public static void download(String email, String fileID, String downFolder) throws IOException {
+  public static void download(String email, String fileID, String downFile) throws IOException {
     setup(email);
+    // file path parsing
+    String folderName, fileName;
+    int idx = Math.max(downFile.lastIndexOf('/'), downFile.lastIndexOf('\\'));
+    folderName = downFile.substring(0, idx);
+    fileName = downFile.substring(idx + 1);
     // create parent directory (if necessary)
-    java.io.File parentDir = new java.io.File(downFolder);
+    java.io.File parentDir = new java.io.File(folderName);
     if (!parentDir.exists() && !parentDir.mkdirs()) {
       throw new IOException("Unable to create parent directory");
     }
 
     // OutputStream out = new FileOutputStream(new java.io.File(parentDir,
     // uploadedFile.getTitle()));
-    OutputStream out = new FileOutputStream(new java.io.File(parentDir, fileID));
+    OutputStream out = new FileOutputStream(new java.io.File(parentDir, fileName));
 
     File fileToDownload = drive.files().get(fileID).execute();
     MediaHttpDownloader downloader =
